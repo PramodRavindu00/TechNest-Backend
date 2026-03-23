@@ -49,10 +49,12 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             // generate auth code and send the code to redis database with authenticated user's ID
             String authCode = authService.generateAuthCode(user);
 
+            log.info("OAuth2 login successful for user: {}", user.getId());
             // redirect to the browser
             response.sendRedirect(origin + "/oauth2/callback?code=" + authCode);
         }
         catch (OAuth2AuthenticationException ex) {
+            log.warn("OAuth2 login faild with known error: {}", ex.getErrorCode());
             response.sendRedirect(origin + "/login?error=" + ex.getErrorCode());
         }
         catch (Exception ex) {

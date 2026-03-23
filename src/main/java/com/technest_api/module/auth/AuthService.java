@@ -95,7 +95,7 @@ public class AuthService {
         return generateTokensFromVerifiedUser(user);
     }
 
-    // should implement
+    // exchange auth code to return JWT tokens
     public AuthTokens exchange(AuthCodeExchangeRequest dto) {
         String key = AUTH_CODE_KEY_PREFIX + dto.getCode();
         String userId = stringRedisTemplate.opsForValue()
@@ -111,7 +111,7 @@ public class AuthService {
         User user = userService.findById(userId)
                 .orElseThrow(
                         () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        
+
         // return access token and refresh token as an exchange for auth code
         return generateTokensFromVerifiedUser(user);
     }
@@ -166,6 +166,5 @@ public class AuthService {
         }
         return null;
     }
-
 
 }
