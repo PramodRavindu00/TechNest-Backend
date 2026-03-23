@@ -17,6 +17,13 @@ spring:
     properties:
       hibernate.format_sql: true
   #    show-sql: true
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+      ssl:
+        enabled: ${REDIS_SSL_ENABLED}
   jackson:
     deserialization:
       fail-on-unknown-properties: true
@@ -28,13 +35,10 @@ spring:
             client-id: ${OAUTH_GOOGLE_CLIENT_ID}
             client-secret: ${OAUTH_GOOGLE_CLIENT_SECRET}
             scope:
+              - openid
               - email
               - profile
-#          linkedin:
-#            client-id: ${OAUTH_LINKEDIN_CLIENT_ID}
-#            client-secret: ${OAUTH_LINKEDIN_CLIENT_SECRET}
-
-
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
 app:
   cors:
     origin: ${CLIENT_APP_DOMAIN}
@@ -45,5 +49,9 @@ app:
   cookie:
     http-secure: ${COOKIE_HTTP_SECURE}
     refresh-token-expiration-sec: 604800
+logging:
+  level:
+    org.hibernate: WARN
+
 
 

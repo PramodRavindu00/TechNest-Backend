@@ -1,6 +1,7 @@
 package com.technest_api.module.auth;
 
 import com.technest_api.common.annotation.SetRefreshTokenCookie;
+import com.technest_api.module.auth.dto.AuthCodeExchangeRequest;
 import com.technest_api.module.auth.dto.AuthTokens;
 import com.technest_api.module.auth.dto.LoginRequest;
 import com.technest_api.module.auth.dto.SignUpRequest;
@@ -36,10 +37,17 @@ public class AuthController {
         return ResponseEntity.ok(authService.refresh(request));
     }
 
+    @PostMapping("/exchange")
+    @SetRefreshTokenCookie
+    public ResponseEntity<AuthTokens> exchange(@Valid @RequestBody AuthCodeExchangeRequest dto) {
+        return ResponseEntity.ok(authService.exchange(dto));
+    }
+
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletRequest request) {
+    public ResponseEntity<Void> logout() {
         return ResponseEntity.ok()
                 .build();
     }
+
 
 }

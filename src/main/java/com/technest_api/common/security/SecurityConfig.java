@@ -1,5 +1,8 @@
 package com.technest_api.common.security;
 
+import com.technest_api.common.filter.JwtAuthFilter;
+import com.technest_api.module.auth.oAuth.OAuth2LoginFailureHandler;
+import com.technest_api.module.auth.oAuth.OAuth2LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -9,8 +12,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.core.GrantedAuthorityDefaults;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -24,24 +25,22 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final String[] publicRoutes = {"/auth/signup", "/auth/login", "/auth/refresh"};
+    private final String[] publicRoutes =
+            {"/auth/signup", "/auth/login", "/auth/refresh", "/auth/exchange", "/login/oauth2/**",
+                    "/oauth2/authorization/**"};
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
 
     @Value("${app.cors.origin}")
     private String origin;
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
     @Bean
     public GrantedAuthorityDefaults grantedAuthorityDefaults() {
         // removes the ROLE_ prefix for roles to allow the exact role name from the DB/System
         return new GrantedAuthorityDefaults("");
     }
-
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
@@ -58,7 +57,10 @@ public class SecurityConfig {
                                         response, "Unauthorized"))
                         .accessDeniedHandler(
                                 (request, response, ignored) -> SecurityErrorResponse.accessDenied(
-                                        request, response)));
+                                        request, response)))
+                .oauth2Login(oauth2 -> oauth2.successHandler(oAuth2LoginSuccessHandler)
+                        .failureHandler(oAuth2LoginFailureHandler));
+
         httpSecurity.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }

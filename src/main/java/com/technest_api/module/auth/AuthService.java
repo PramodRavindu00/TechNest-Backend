@@ -1,15 +1,18 @@
 package com.technest_api.module.auth;
 
-import com.technest_api.common.constant.Role;
-import com.technest_api.common.security.JwtService;
+import com.technest_api.common.constant.enums.Role;
+import com.technest_api.common.service.JwtService;
+import com.technest_api.module.auth.dto.AuthCodeExchangeRequest;
 import com.technest_api.module.auth.dto.AuthTokens;
 import com.technest_api.module.auth.dto.LoginRequest;
 import com.technest_api.module.auth.dto.SignUpRequest;
-import com.technest_api.module.user.UserRepository;
+import com.technest_api.module.user.UserService;
+import com.technest_api.module.user.dto.CreateUserDto;
 import com.technest_api.module.user.model.User;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,35 +22,35 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-    private final UserRepository userRepo;
+    private static final String AUTH_CODE_KEY_PREFIX = "technest:authcode";
+    private static final long AUTH_CODE_EXPIRY_SECONDS = 60L;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final UserService userService;
+    private final StringRedisTemplate stringRedisTemplate;
 
     public void localSignUp(SignUpRequest dto) {
-        Optional<User> existByEmail = userRepo.findByEmail(dto.getEmail());
+        Optional<User> existByEmail = userService.findByEmail(dto.getEmail());
         if (existByEmail.isPresent()) {
             User userByEmail = existByEmail.get();
             if (userByEmail.getPasswordHash() == null) {
                 String connectedOauthProviders = getConnectedOauthProviders(userByEmail);
                 throw new ResponseStatusException(HttpStatus.CONFLICT,
-                        "Email already exists with" + connectedOauthProviders + " login");
+                        "Email already exists with " + connectedOauthProviders + " login");
             }
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
-
-        User newUser = User.builder()
-                .email(dto.getEmail())
-                .passwordHash(passwordEncoder.encode(dto.getPassword()))
-                .build();
-        userRepo.save(newUser);
+        CreateUserDto newUser = new CreateUserDto(dto);
+        userService.createUser(newUser);
     }
 
     public AuthTokens localLogin(LoginRequest dto) {
-        Optional<User> existingUserByEmail = userRepo.findByEmail(dto.getEmail());
+        Optional<User> existingUserByEmail = userService.findByEmail(dto.getEmail());
         if (existingUserByEmail.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
@@ -79,17 +82,52 @@ public class AuthService {
                     "Refresh token has expired" + ". Please login");
         }
 
-        if (!jwtService.isTokenValid(refreshToken)) {
+        if (jwtService.isTokenValid(refreshToken)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                     "Invalid refresh token. " + "Please login");
         }
 
         String userIdFromToken = jwtService.extractUserIdFromToken(refreshToken);
-        User user = userRepo.findById(UUID.fromString(userIdFromToken))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                        "User not found"));
 
+        User user = userService.findById(userIdFromToken)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         return generateTokensFromVerifiedUser(user);
+    }
+
+    // exchange auth code to return JWT tokens
+    public AuthTokens exchange(AuthCodeExchangeRequest dto) {
+        String key = AUTH_CODE_KEY_PREFIX + dto.getCode();
+        String userId = stringRedisTemplate.opsForValue()
+                .get(key);
+
+        if (userId == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Auth code invalid or " + "expired");
+        }
+
+        // delete from redis database after one time use // extracted the userId from the code
+        stringRedisTemplate.delete(key);
+        User user = userService.findById(userId)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        // return access token and refresh token as an exchange for auth code
+        return generateTokensFromVerifiedUser(user);
+    }
+
+    public String generateAuthCode(User authenticatedUser) {
+        String authCode = UUID.randomUUID()
+                .toString();
+        //create redis key
+        String key = AUTH_CODE_KEY_PREFIX + authCode;
+        String userId = authenticatedUser.getId()
+                .toString();
+        //save in the redis database key+ userId
+        stringRedisTemplate.opsForValue()
+                .set(key, userId, AUTH_CODE_EXPIRY_SECONDS, TimeUnit.SECONDS);
+        //return the code
+        return authCode;
     }
 
     private String getConnectedOauthProviders(User user) {
@@ -128,6 +166,5 @@ public class AuthService {
         }
         return null;
     }
-
 
 }

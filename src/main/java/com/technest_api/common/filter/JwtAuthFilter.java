@@ -1,6 +1,9 @@
-package com.technest_api.common.security;
+package com.technest_api.common.filter;
 
-import com.technest_api.module.user.UserRepository;
+import com.technest_api.common.security.AuthenticatedUser;
+import com.technest_api.common.security.SecurityErrorResponse;
+import com.technest_api.common.service.JwtService;
+import com.technest_api.module.user.UserService;
 import com.technest_api.module.user.model.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -16,13 +19,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -44,7 +46,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (!jwtService.isTokenValid(token)) {
+        if (jwtService.isTokenValid(token)) {
             SecurityErrorResponse.unauthorized(request, response, "Invalid Token");
             return;
         }
@@ -60,9 +62,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         // get the user from the database using the userId from the token
-        User user = userRepository.findById(UUID.fromString(userIdFromToken))
+        User user = userService.findById(userIdFromToken)
                 .orElse(null);
-
         // this checks a valid token exists but user deleted scenario
         if (user == null) {
             SecurityErrorResponse.unauthorized(request, response, "User not found");
