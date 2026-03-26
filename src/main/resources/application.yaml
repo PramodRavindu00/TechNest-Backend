@@ -1,6 +1,5 @@
 server:
   port: ${SERVER_PORT}
-
 spring:
   application:
     name: technest-api
@@ -52,6 +51,19 @@ app:
 logging:
   level:
     org.hibernate: WARN
+
+# api documentation
+springdoc:
+  api-docs:
+    enabled: true
+scalar:
+  enabled: true
+  path: /docs
+  theme: purple
+  darkMode: true
+  show-sidebar: false
+  hide-models: true
+
 
 
 

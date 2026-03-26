@@ -18,23 +18,36 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
-    private final String[] publicRoutes =
-            {"/auth/signup", "/auth/login", "/auth/refresh", "/auth/exchange", "/login/oauth2/**",
-                    "/oauth2/authorization/**"};
-
     private final JwtAuthFilter jwtAuthFilter;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
 
     @Value("${app.cors.origin}")
     private String origin;
+
+    @Value("${springdoc.api-docs.enabled}")
+    private boolean apiDocsEnabled;
+
+    private String[] getPublicRoutes() {
+        List<String> publicRoutes = new ArrayList<>(
+                List.of("/auth/signup", "/auth/login", "/auth/refresh", "/auth/exchange",
+                        "/login/oauth2/**", "/oauth2/authorization/**"));
+
+        // if documentation enabled by config, add docs routes to skip from auth checks
+        if (apiDocsEnabled) {
+            publicRoutes.add("/docs/**");
+            publicRoutes.add("/v3/api-docs/**");
+        }
+        return publicRoutes.toArray(new String[0]);
+    }
+
 
     @Bean
     public GrantedAuthorityDefaults grantedAuthorityDefaults() {
@@ -48,7 +61,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(
                         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.requestMatchers(publicRoutes)
+                .authorizeHttpRequests(auth -> auth.requestMatchers(getPublicRoutes())
                         .permitAll()
                         .anyRequest()
                         .authenticated())
