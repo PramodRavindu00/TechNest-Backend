@@ -4,10 +4,12 @@ import com.technest_api.common.constant.enums.Role;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.UUID;
+
 @Getter
 @Builder
 public class AuthenticatedUser {
-    private String id;
+    private UUID id;
     private String email;
     private Role role;
 }

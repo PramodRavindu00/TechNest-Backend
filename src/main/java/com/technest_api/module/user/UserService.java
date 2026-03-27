@@ -3,6 +3,7 @@ package com.technest_api.module.user;
 import com.technest_api.common.constant.enums.Role;
 import com.technest_api.common.exception.OAuth2AuthenticationException;
 import com.technest_api.module.user.dto.CreateUserDto;
+import com.technest_api.module.user.dto.UpdateUserDto;
 import com.technest_api.module.user.dto.UserResponseDto;
 import com.technest_api.module.user.model.User;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +51,10 @@ public class UserService {
                 .passwordHash(passwordEncoder.encode(dto.getPassword()))
                 .build();
         userRepo.save(newUser);
+    }
+
+    public void updateUser(String id, UpdateUserDto dto) {
+
     }
 
     public Optional<User> findById(String id) {
