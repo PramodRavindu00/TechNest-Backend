@@ -18,6 +18,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@NamedEntityGraph(name = "Post.withRelations",
+        attributeNodes = {@NamedAttributeNode("author"), @NamedAttributeNode("media")})
 public class Post {
 
     @Id
@@ -30,7 +32,7 @@ public class Post {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", insertable = false, updatable = false)
-    private User user;
+    private User author;
 
     @Column(nullable = false)
     private String title;

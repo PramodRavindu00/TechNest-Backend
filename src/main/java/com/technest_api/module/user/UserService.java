@@ -2,14 +2,18 @@ package com.technest_api.module.user;
 
 import com.technest_api.common.constant.enums.Role;
 import com.technest_api.common.exception.OAuth2AuthenticationException;
+import com.technest_api.common.security.AuthenticatedUser;
 import com.technest_api.module.user.dto.CreateUserDto;
-import com.technest_api.module.user.dto.UpdateUserDto;
 import com.technest_api.module.user.dto.UserResponseDto;
+import com.technest_api.module.user.mapper.UserMapper;
 import com.technest_api.module.user.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,12 +25,18 @@ import java.util.UUID;
 public class UserService {
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
     public List<UserResponseDto> getAll() {
-        return userRepo.findAll()
-                .stream()
-                .map(this::toUserResponseDto)
-                .toList();
+        List<User> users = userRepo.findAll();
+        return userMapper.toDtoList(users);
+    }
+
+    public UserResponseDto getOne(String id) {
+        User user = userRepo.findById(UUID.fromString(id))
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        return userMapper.toDto(user);
     }
 
     public void createAdminUserIfNotExists() {
@@ -51,10 +61,6 @@ public class UserService {
                 .passwordHash(passwordEncoder.encode(dto.getPassword()))
                 .build();
         userRepo.save(newUser);
-    }
-
-    public void updateUser(String id, UpdateUserDto dto) {
-
     }
 
     public Optional<User> findById(String id) {
@@ -84,13 +90,8 @@ public class UserService {
         return userRepo.save(newUser);
     }
 
-    private UserResponseDto toUserResponseDto(User user) {
-        return UserResponseDto.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .googleId(user.getGoogleId())
-                .linkedinId(user.getLinkedInId())
-                .role(user.getRole())
-                .build();
+    @Transactional
+    public void promoteToAuthorIfReader(AuthenticatedUser user) {
+        userRepo.updateRoleIfCurrent(user.getId(), Role.AUTHOR, Role.READER);
     }
 }

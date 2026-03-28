@@ -72,7 +72,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         // build the authenticated user from the db response
         AuthenticatedUser authenticatedUser = AuthenticatedUser.builder()
-                .id(String.valueOf(user.getId()))
+                .id(user.getId())
                 .email(user.getEmail())
                 .role(user.getRole())
                 .build();
