@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,12 +26,21 @@ public class PostController {
         postService.create(dto, user);
     }
 
+    @PutMapping("/{id}")
+    public void edit(@Valid @RequestBody CreatePostDto dto,
+                     @AuthenticationPrincipal AuthenticatedUser user) {
+        postService.create(dto, user);
+    }
+
+
     @GetMapping()
     public ResponseEntity<List<PostResponseDto>> getAll() {
         return ResponseEntity.ok(postService.getAll());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize(
+            "hasAnyRole('AUTHOR', 'MODERATOR', 'ADMIN') && @PostSecurity.isResourceOwner(#id, principal)")
     public ResponseEntity<PostResponseDto> getOne(@PathVariable String id) {
         return ResponseEntity.ok(postService.getOne(id));
     }

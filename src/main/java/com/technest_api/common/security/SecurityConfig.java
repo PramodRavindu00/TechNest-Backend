@@ -70,8 +70,8 @@ public class SecurityConfig {
                                 (request, response, ignored) -> SecurityErrorResponse.unauthorized(request,
                                         response, "Unauthorized"))
                         .accessDeniedHandler(
-                                (request, response, ignored) -> SecurityErrorResponse.accessDenied(
-                                        request, response)))
+                                (request, response, ex) -> SecurityErrorResponse.accessDenied(
+                                        request, response, ex.getMessage())))
                 .oauth2Login(oauth2 -> oauth2.successHandler(oAuth2LoginSuccessHandler)
                         .failureHandler(oAuth2LoginFailureHandler));
 
