@@ -4,6 +4,7 @@ import com.technest_api.module.post.model.Post;
 import lombok.NonNull;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,4 +21,8 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     List<Post> findAll();
 
     Optional<Post> findByIdAndAuthorId(UUID id, UUID authorId);
+
+    @Modifying
+    int deletePostById(UUID id);
 }
+

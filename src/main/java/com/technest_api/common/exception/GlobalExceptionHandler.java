@@ -3,10 +3,13 @@ package com.technest_api.common.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 import tools.jackson.databind.exc.UnrecognizedPropertyException;
 
 import java.util.LinkedHashMap;
@@ -73,4 +76,45 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handlePathVariableTypeMismatch(
+            MethodArgumentTypeMismatchException exception, HttpServletRequest request) {
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("status", 400);
+        response.put("message", "Invalid value for '" + exception.getName() + "'");
+        response.put("path", request.getRequestURI());
+        response.put("method", request.getMethod());
+
+        return ResponseEntity.badRequest()
+                .body(response);
+    }
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNoHandlerFound(
+            NoHandlerFoundException exception, HttpServletRequest request) {
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("status", 404);
+        response.put("message", "Endpoint not found");
+        response.put("path", request.getRequestURI());
+        response.put("method", request.getMethod());
+
+        return ResponseEntity.status(404)
+                .body(response);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Map<String, Object>> handleMethodNotSupported(
+            HttpRequestMethodNotSupportedException exception, HttpServletRequest request) {
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("status", 405);
+        response.put("message", "Method not allowed");
+        response.put("path", request.getRequestURI());
+        response.put("method", request.getMethod());
+
+        return ResponseEntity.status(405)
+                .body(response);
+    }
 }
