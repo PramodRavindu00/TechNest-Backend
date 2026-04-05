@@ -28,7 +28,7 @@ public class PostController {
         postService.create(dto, user);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     @PreAuthorize(
             "hasAnyRole('AUTHOR', 'MODERATOR', 'ADMIN') && @PostSecurity.isResourceOwner(#id, principal)")
     public void edit(@PathVariable UUID id, @Valid @RequestBody UpdatePostDto dto,
@@ -42,7 +42,7 @@ public class PostController {
     public void delete(@PathVariable UUID id) {
         postService.delete(id);
     }
-    
+
     @GetMapping()
     public ResponseEntity<List<PostResponseDto>> getAll() {
         return ResponseEntity.ok(postService.getAll());
