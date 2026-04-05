@@ -34,8 +34,8 @@ public class AuthService {
     private final UserService userService;
     private final StringRedisTemplate stringRedisTemplate;
 
-    public void localSignUp(SignUpRequest dto) {
-        Optional<User> existByEmail = userService.findByEmail(dto.getEmail());
+    public void localSignUp(SignUpRequest request) {
+        Optional<User> existByEmail = userService.findByEmail(request.getEmail());
         if (existByEmail.isPresent()) {
             User userByEmail = existByEmail.get();
             if (userByEmail.getPasswordHash() == null) {
@@ -45,12 +45,12 @@ public class AuthService {
             }
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
-        CreateUserDto newUser = new CreateUserDto(dto);
+        CreateUserDto newUser = new CreateUserDto(request);
         userService.createUser(newUser);
     }
 
-    public AuthTokens localLogin(LoginRequest dto) {
-        Optional<User> existingUserByEmail = userService.findByEmail(dto.getEmail());
+    public AuthTokens localLogin(LoginRequest request) {
+        Optional<User> existingUserByEmail = userService.findByEmail(request.getEmail());
         if (existingUserByEmail.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
@@ -63,7 +63,7 @@ public class AuthService {
                             connectedOauthProviders + ". Please use that or reset your password.");
         }
         boolean isPasswordMatching =
-                passwordEncoder.matches(dto.getPassword(), currentPasswordHash);
+                passwordEncoder.matches(request.getPassword(), currentPasswordHash);
         if (!isPasswordMatching) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
@@ -96,8 +96,8 @@ public class AuthService {
     }
 
     // exchange auth code to return JWT tokens
-    public AuthTokens exchange(AuthCodeExchangeRequest dto) {
-        String key = AUTH_CODE_KEY_PREFIX + dto.getCode();
+    public AuthTokens exchange(AuthCodeExchangeRequest request) {
+        String key = AUTH_CODE_KEY_PREFIX + request.getCode();
         String userId = stringRedisTemplate.opsForValue()
                 .get(key);
 

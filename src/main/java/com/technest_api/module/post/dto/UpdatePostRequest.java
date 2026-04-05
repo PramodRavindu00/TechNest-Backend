@@ -7,5 +7,5 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class UpdatePostDto extends CreatePostDto implements PostPayload {
+public class UpdatePostRequest extends CreatePostRequest implements PostPayload {
 }

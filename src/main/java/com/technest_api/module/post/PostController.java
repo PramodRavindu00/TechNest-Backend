@@ -1,9 +1,10 @@
 package com.technest_api.module.post;
 
 import com.technest_api.common.security.AuthenticatedUser;
-import com.technest_api.module.post.dto.CreatePostDto;
+import com.technest_api.module.post.dto.CreatePostRequest;
+import com.technest_api.module.post.dto.PinPostRequest;
 import com.technest_api.module.post.dto.PostResponseDto;
-import com.technest_api.module.post.dto.UpdatePostDto;
+import com.technest_api.module.post.dto.UpdatePostRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,17 +24,17 @@ public class PostController {
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public void create(@Valid @RequestBody CreatePostDto dto,
+    public void create(@Valid @RequestBody CreatePostRequest request,
                        @AuthenticationPrincipal AuthenticatedUser user) {
-        postService.create(dto, user);
+        postService.create(request, user);
     }
 
     @PatchMapping("/{id}")
     @PreAuthorize(
             "hasAnyRole('AUTHOR', 'MODERATOR', 'ADMIN') && @PostSecurity.isResourceOwner(#id, principal)")
-    public void edit(@PathVariable UUID id, @Valid @RequestBody UpdatePostDto dto,
+    public void edit(@PathVariable UUID id, @Valid @RequestBody UpdatePostRequest request,
                      @AuthenticationPrincipal AuthenticatedUser user) {
-        postService.edit(id, dto, user);
+        postService.edit(id, request, user);
     }
 
     @DeleteMapping("/{id}")
@@ -51,5 +52,9 @@ public class PostController {
     @GetMapping("/{id}")
     public ResponseEntity<PostResponseDto> getOne(@PathVariable String id) {
         return ResponseEntity.ok(postService.getOne(id));
+    }
+
+    public void updatePostPinStatus(@PathVariable UUID id,
+                                    @Valid @RequestBody PinPostRequest request) {
     }
 }

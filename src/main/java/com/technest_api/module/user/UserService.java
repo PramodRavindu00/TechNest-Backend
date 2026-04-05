@@ -55,10 +55,10 @@ public class UserService {
         log.info("Admin user seeded successfully");
     }
 
-    public void createUser(CreateUserDto dto) {
+    public void createUser(CreateUserDto request) {
         User newUser = User.builder()
-                .email(dto.getEmail())
-                .passwordHash(passwordEncoder.encode(dto.getPassword()))
+                .email(request.getEmail())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .build();
         userRepo.save(newUser);
     }

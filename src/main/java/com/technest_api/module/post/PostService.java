@@ -2,10 +2,10 @@ package com.technest_api.module.post;
 
 import com.technest_api.common.constant.enums.PostStatus;
 import com.technest_api.common.security.AuthenticatedUser;
-import com.technest_api.module.post.dto.CreatePostDto;
+import com.technest_api.module.post.dto.CreatePostRequest;
 import com.technest_api.module.post.dto.PostPayload;
 import com.technest_api.module.post.dto.PostResponseDto;
-import com.technest_api.module.post.dto.UpdatePostDto;
+import com.technest_api.module.post.dto.UpdatePostRequest;
 import com.technest_api.module.post.mapper.PostMapper;
 import com.technest_api.module.post.model.Post;
 import com.technest_api.module.user.UserService;
@@ -29,8 +29,8 @@ public class PostService {
     private final PostMapper postMapper;
 
     @Transactional
-    public void create(CreatePostDto dto, AuthenticatedUser user) {
-        Post newPost = buildPost(dto, user, null).build();
+    public void create(CreatePostRequest request, AuthenticatedUser user) {
+        Post newPost = buildPost(request, user, null).build();
 
         // save the new post
         postRepo.save(newPost);
@@ -39,11 +39,11 @@ public class PostService {
         userService.promoteToAuthorIfReader(user);
     }
 
-    public void edit(UUID id, UpdatePostDto dto, AuthenticatedUser user) {
+    public void edit(UUID id, UpdatePostRequest request, AuthenticatedUser user) {
         Post existing = postRepo.findById(id)
                 .orElseThrow(
                         () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
-        Post updatedPost = buildPost(dto, user, existing).build();
+        Post updatedPost = buildPost(request, user, existing).build();
 
         // save the new post
         postRepo.save(updatedPost);
@@ -70,24 +70,26 @@ public class PostService {
         return postMapper.toDto(post);
     }
 
-    private Post.PostBuilder buildPost(PostPayload dto, AuthenticatedUser user, Post existingPost) {
+    private Post.PostBuilder buildPost(PostPayload request, AuthenticatedUser user,
+                                       Post existingPost) {
         // sanitize the body
-        String safeBody = Jsoup.clean(dto.getBody(), Safelist.basicWithImages());
+        String safeBody = Jsoup.clean(request.getBody(), Safelist.basicWithImages());
 
         // generate a unique slug if it's pure creation or if it's not equals to current slug only
         // if it's editing both titles are exactly same then use the existing slug
         String slug = existingPost != null && existingPost.getTitle()
-                .equals(dto.getTitle()) ? existingPost.getSlug() :
-                generateUniqueSlug(dto.getTitle());
+                .equals(request.getTitle()) ? existingPost.getSlug() :
+                generateUniqueSlug(request.getTitle());
 
         Post.PostBuilder builder = Post.builder()
-                .title(dto.getTitle())
+                .title(request.getTitle())
                 .authorId(existingPost != null ? existingPost.getAuthorId() : user.getId())
                 .slug(slug)
                 .excerpt(generateExcerpt(safeBody))
                 .body(safeBody)
-                .status(dto.getStatus() != null ? dto.getStatus() : PostStatus.DRAFT)
-                .publishedAt(dto.getStatus() == PostStatus.PUBLISHED ? LocalDateTime.now() : null);
+                .status(request.getStatus() != null ? request.getStatus() : PostStatus.DRAFT)
+                .publishedAt(
+                        request.getStatus() == PostStatus.PUBLISHED ? LocalDateTime.now() : null);
 
         // explicitly set existing values to the builder when its editing
         if (existingPost != null) {

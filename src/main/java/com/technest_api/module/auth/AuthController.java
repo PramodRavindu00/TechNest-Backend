@@ -21,14 +21,14 @@ public class AuthController {
 
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
-    public void localSignUp(@Valid @RequestBody SignUpRequest dto) {
-        authService.localSignUp(dto);
+    public void localSignUp(@Valid @RequestBody SignUpRequest request) {
+        authService.localSignUp(request);
     }
 
     @PostMapping("/login")
     @SetRefreshTokenCookie
-    public ResponseEntity<AuthTokens> localLogin(@Valid @RequestBody LoginRequest dto) {
-        return ResponseEntity.ok(authService.localLogin(dto));
+    public ResponseEntity<AuthTokens> localLogin(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.localLogin(request));
     }
 
     @PostMapping("/refresh")
@@ -39,8 +39,9 @@ public class AuthController {
 
     @PostMapping("/exchange")
     @SetRefreshTokenCookie
-    public ResponseEntity<AuthTokens> exchange(@Valid @RequestBody AuthCodeExchangeRequest dto) {
-        return ResponseEntity.ok(authService.exchange(dto));
+    public ResponseEntity<AuthTokens> exchange(
+            @Valid @RequestBody AuthCodeExchangeRequest request) {
+        return ResponseEntity.ok(authService.exchange(request));
     }
 
     @PostMapping("/logout")

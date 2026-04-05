@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class CreatePostDto implements PostPayload {
+public class CreatePostRequest implements PostPayload {
 
     @NotBlank()
     private String title;
