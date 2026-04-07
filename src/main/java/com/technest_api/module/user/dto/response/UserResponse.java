@@ -1,4 +1,4 @@
-package com.technest_api.module.user.dto;
+package com.technest_api.module.user.dto.response;
 
 import com.technest_api.common.constant.enums.Role;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponseDto {
+public class UserResponse {
     private UUID id;
     private String email;
     private String googleId;

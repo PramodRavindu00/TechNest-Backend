@@ -2,12 +2,12 @@ package com.technest_api.module.auth;
 
 import com.technest_api.common.constant.enums.Role;
 import com.technest_api.common.service.JwtService;
-import com.technest_api.module.auth.dto.AuthCodeExchangeRequest;
-import com.technest_api.module.auth.dto.AuthTokens;
-import com.technest_api.module.auth.dto.LoginRequest;
-import com.technest_api.module.auth.dto.SignUpRequest;
+import com.technest_api.module.auth.dto.request.AuthCodeExchangeRequest;
+import com.technest_api.module.auth.dto.request.LoginRequest;
+import com.technest_api.module.auth.dto.request.SignUpRequest;
+import com.technest_api.module.auth.dto.response.AuthTokens;
 import com.technest_api.module.user.UserService;
-import com.technest_api.module.user.dto.CreateUserDto;
+import com.technest_api.module.user.dto.request.CreateUserRequest;
 import com.technest_api.module.user.model.User;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,7 +45,7 @@ public class AuthService {
             }
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
-        CreateUserDto newUser = new CreateUserDto(request);
+        CreateUserRequest newUser = new CreateUserRequest(request);
         userService.createUser(newUser);
     }
 

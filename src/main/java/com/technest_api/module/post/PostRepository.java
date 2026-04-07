@@ -20,6 +20,8 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     @NonNull
     List<Post> findAll();
 
+    List<Post> findAllByAuthorId(UUID authorId);
+
     Optional<Post> findByIdAndAuthorId(UUID id, UUID authorId);
 
     @Modifying

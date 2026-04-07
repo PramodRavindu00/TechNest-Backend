@@ -1,10 +1,10 @@
 package com.technest_api.module.auth;
 
 import com.technest_api.common.annotation.SetRefreshTokenCookie;
-import com.technest_api.module.auth.dto.AuthCodeExchangeRequest;
-import com.technest_api.module.auth.dto.AuthTokens;
-import com.technest_api.module.auth.dto.LoginRequest;
-import com.technest_api.module.auth.dto.SignUpRequest;
+import com.technest_api.module.auth.dto.request.AuthCodeExchangeRequest;
+import com.technest_api.module.auth.dto.request.LoginRequest;
+import com.technest_api.module.auth.dto.request.SignUpRequest;
+import com.technest_api.module.auth.dto.response.AuthTokens;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

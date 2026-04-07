@@ -1,6 +1,6 @@
 package com.technest_api.module.user;
 
-import com.technest_api.module.user.dto.UserResponseDto;
+import com.technest_api.module.user.dto.response.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,13 +19,13 @@ public class UserController {
 
     @GetMapping()
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserResponseDto>> getAll() {
+    public ResponseEntity<List<UserResponse>> getAll() {
         return ResponseEntity.ok(userService.getAll());
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')") // only admins can get any user
-    public ResponseEntity<UserResponseDto> getOne(@PathVariable String id) {
+    public ResponseEntity<UserResponse> getOne(@PathVariable String id) {
         return ResponseEntity.ok(userService.getOne(id));
     }
 }

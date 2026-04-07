@@ -3,8 +3,8 @@ package com.technest_api.module.user;
 import com.technest_api.common.constant.enums.Role;
 import com.technest_api.common.exception.OAuth2AuthenticationException;
 import com.technest_api.common.security.AuthenticatedUser;
-import com.technest_api.module.user.dto.CreateUserDto;
-import com.technest_api.module.user.dto.UserResponseDto;
+import com.technest_api.module.user.dto.request.CreateUserRequest;
+import com.technest_api.module.user.dto.response.UserResponse;
 import com.technest_api.module.user.mapper.UserMapper;
 import com.technest_api.module.user.model.User;
 import lombok.RequiredArgsConstructor;
@@ -27,12 +27,12 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
-    public List<UserResponseDto> getAll() {
+    public List<UserResponse> getAll() {
         List<User> users = userRepo.findAll();
         return userMapper.toDtoList(users);
     }
 
-    public UserResponseDto getOne(String id) {
+    public UserResponse getOne(String id) {
         User user = userRepo.findById(UUID.fromString(id))
                 .orElseThrow(
                         () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
@@ -55,7 +55,7 @@ public class UserService {
         log.info("Admin user seeded successfully");
     }
 
-    public void createUser(CreateUserDto request) {
+    public void createUser(CreateUserRequest request) {
         User newUser = User.builder()
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))

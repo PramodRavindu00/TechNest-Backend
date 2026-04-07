@@ -2,10 +2,11 @@ package com.technest_api.module.post;
 
 import com.technest_api.common.constant.enums.PostStatus;
 import com.technest_api.common.security.AuthenticatedUser;
-import com.technest_api.module.post.dto.CreatePostRequest;
-import com.technest_api.module.post.dto.PostPayload;
-import com.technest_api.module.post.dto.PostResponseDto;
-import com.technest_api.module.post.dto.UpdatePostRequest;
+import com.technest_api.module.post.dto.request.CreatePostRequest;
+import com.technest_api.module.post.dto.request.PostPayload;
+import com.technest_api.module.post.dto.request.UpdatePostRequest;
+import com.technest_api.module.post.dto.response.PostFullResponse;
+import com.technest_api.module.post.dto.response.PostSummaryResponse;
 import com.technest_api.module.post.mapper.PostMapper;
 import com.technest_api.module.post.model.Post;
 import com.technest_api.module.user.UserService;
@@ -58,17 +59,31 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostResponseDto> getAll() {
+    public List<PostFullResponse> getAll() {
         List<Post> posts = postRepo.findAll();
-        return postMapper.toDtoList(posts);
+        return postMapper.toFullDtoList(posts);
     }
 
-    public PostResponseDto getOne(String id) {
+    public List<PostSummaryResponse> getAllByUser(UUID userId) {
+        List<Post> posts = postRepo.findAllByAuthorId(userId);
+        return postMapper.toSummaryDtoList(posts);
+    }
+
+
+    public PostFullResponse getOne(String id) {
         Post post = postRepo.findById(UUID.fromString(id))
                 .orElseThrow(
                         () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
-        return postMapper.toDto(post);
+        return postMapper.toFullDto(post);
     }
+
+    public PostSummaryResponse getOneByUser(String id, UUID userId) {
+        Post post = postRepo.findByIdAndAuthorId(UUID.fromString(id), userId)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
+        return postMapper.toSummaryDto(post);
+    }
+
 
     private Post.PostBuilder buildPost(PostPayload request, AuthenticatedUser user,
                                        Post existingPost) {

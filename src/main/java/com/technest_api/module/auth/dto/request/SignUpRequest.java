@@ -1,6 +1,5 @@
-package com.technest_api.module.user.dto;
+package com.technest_api.module.auth.dto.request;
 
-import com.technest_api.module.auth.dto.SignUpRequest;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -11,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class CreateUserDto {
+public class SignUpRequest {
 
     @NotBlank()
     @Email()
@@ -20,9 +19,4 @@ public class CreateUserDto {
     @NotBlank()
     @Size(min = 8)
     private String password;
-
-    public CreateUserDto(SignUpRequest dto) {
-        this.email = dto.getEmail();
-        this.password = dto.getPassword();
-    }
 }

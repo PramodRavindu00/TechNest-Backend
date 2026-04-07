@@ -1,4 +1,4 @@
-package com.technest_api.module.auth.dto;
+package com.technest_api.module.auth.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthTokens {
+public class AuthResponse {
     private String accessToken;
-    private String refreshToken;
 }

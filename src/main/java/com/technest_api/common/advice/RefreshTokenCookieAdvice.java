@@ -1,8 +1,8 @@
 package com.technest_api.common.advice;
 
 import com.technest_api.common.annotation.SetRefreshTokenCookie;
-import com.technest_api.module.auth.dto.AuthResponse;
-import com.technest_api.module.auth.dto.AuthTokens;
+import com.technest_api.module.auth.dto.response.AuthResponse;
+import com.technest_api.module.auth.dto.response.AuthTokens;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;

@@ -1,4 +1,4 @@
-package com.technest_api.module.auth.dto;
+package com.technest_api.module.auth.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
